@@ -1,6 +1,8 @@
-from flask import Flask, request, render_template, redirect, url_for, Response
+import time
+from flask import Flask, request, render_template, redirect, url_for, Response, json
 from flask_login import LoginManager, login_user, login_required, logout_user
 from forms import SignupForm
+from hub.HubConnection import HubConnection
 from models.user import User
 
 app = Flask(__name__)
@@ -8,6 +10,9 @@ app.secret_key = 'secretkeyhereplease'
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+device_data_stack = list()
+
 
 @app.route('/')
 def index():
@@ -18,7 +23,7 @@ def index():
 def signup():
     form = SignupForm()
     if request.method == 'GET':
-        return render_template('signup.html', form = form)
+        return render_template('signup.html', form=form)
     elif request.method == 'POST':
         if form.validate_on_submit():
             if User.objects(email=form.email.data).first():
@@ -32,14 +37,14 @@ def signup():
             return "Form didn't validate"
 
 
-@app.route('/login', methods=['GET','POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     form = SignupForm()
     if request.method == 'GET':
         return render_template('login.html', form=form)
     elif request.method == 'POST':
         if form.validate_on_submit():
-            user=User.objects(email=form.email.data).first()
+            user = User.objects(email=form.email.data).first()
             if user:
                 if user.password == form.password.data:
                     login_user(user)
@@ -49,40 +54,34 @@ def login():
             else:
                 return "user doesn't exist"
     else:
-            return "form not validated"
+        return "form not validated"
 
 
 @app.route('/protected')
 @login_required
 def protected():
-    debug_template = """
-         <html>
-           <head>
-           </head>
-           <body>
-             <h1>Server sent events</h1>
-             <div id="this-div"></div>
-             <script type="text/javascript">
-             var targetContainer = document.getElementById("this-div");
-             var eventSource = new EventSource("/stream");
-             eventSource.onmessage = function(e) {
-                console.log(e.data);
-                targetContainer.innerHTML = e.data;
-             };
-             </script>
-           </body>
-         </html>
-        """
-    return (debug_template)
+    return render_template("deviceview.html")
+
+
+def hub_callback(data):
+    device_data_stack.append(data)
+
+
+app.hub = HubConnection(hub_callback)# TODO remove app. prefix
+app.hub_data_listener = app.hub.data_listener()
+app.data = "{}"
 
 
 @app.route("/stream")
 def stream():
     def eventStream():
         while True:
-            # Poll data from the database
-            # and see if there's a new message
-            yield "data: {babababababababbaabbaab}\n\n"
+            time.sleep(1)
+            while len(device_data_stack) > 0:
+                app.data = json.dumps(device_data_stack.pop())
+            yield "data: " + app.data + "\n\n"
+            next(app.hub_data_listener)
+
     return Response(eventStream(), mimetype="text/event-stream")
 
 

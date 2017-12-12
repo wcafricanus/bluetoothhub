@@ -20,21 +20,21 @@ class HubConnection:
         thread = Async.Thread(self.start_event)
         thread.start()
 
-        var = 1
-        while var == 1:
+    def data_listener(self):
+        while True:
             need_call_back = False
 
-            if self.remove_timeout_device() == True:
+            if self.remove_timeout_device():
                 need_call_back = True
 
             if self.serial > self.last_serial:
                 self.last_serial = self.serial
                 need_call_back = True
 
-            if need_call_back == True:
+            if need_call_back:
                 self.call_back(self.scanned_device_list)
 
-            time.sleep(3)
+            yield
 
     def start_event(self):
         response = SSERequest.with_urllib3(self.url)
