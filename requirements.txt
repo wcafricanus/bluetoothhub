@@ -4,3 +4,5 @@ flask-wtf
 mongoengine
 sseclient-py
 pytest
+gunicorn
+gevent
