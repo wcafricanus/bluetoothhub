@@ -2,11 +2,15 @@ import hub.SSERequest as SSERequest
 import json
 import sseclient
 import time
+import requests
 import hub.Async as Async
 
 class HubConnection:
 
     url = 'http://172.26.186.177/gap/nodes?event=1&mac=CC:1B:E0:E0:69:B0'
+    urlConnectPrefix = 'http://172.26.186.177/gap/nodes/'
+    urlConnectSuffix = '/connection?mac=CC:1B:E0:E0:69:B0'
+
     call_back = 0
     scanned_device_list = {}
     remove_list = []
@@ -60,5 +64,18 @@ class HubConnection:
 
         return has_changes
 
+    def connectDevice(self, mac):
+        url = self.urlConnectPrefix + mac + self.urlConnectSuffix
+        r = requests.post(url)
+        if r.status_code == 200:
+            return True
+        else:
+            return False
 
-
+    def disconnectDevice(self, mac):
+        url = self.urlConnectPrefix + mac + self.urlConnectSuffix
+        r = requests.delete(url)
+        if r.status_code == 200:
+            return True
+        else:
+            return False
