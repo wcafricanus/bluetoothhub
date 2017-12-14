@@ -13,28 +13,20 @@ class HubConnection:
     serial = 0
     last_serial = 0
 
-    def __init__(self, call_back):
+    def __init__(self):
         self.serial = 0
         self.last_serial = self.serial
-        self.call_back = call_back
         thread = Async.Thread(self.start_event)
         thread.start()
 
     def data_listener(self):
         while True:
-            need_call_back = False
-
-            if self.remove_timeout_device():
-                need_call_back = True
+            self.remove_timeout_device()
 
             if self.serial > self.last_serial:
                 self.last_serial = self.serial
-                need_call_back = True
 
-            if need_call_back:
-                self.call_back(self.scanned_device_list)
-
-            yield
+            yield self.scanned_device_list
 
     def start_event(self):
         response = SSERequest.with_urllib3(self.url)
@@ -63,7 +55,6 @@ class HubConnection:
 
         for item in self.remove_list:
             self.scanned_device_list.pop(item)
-            self.call_back(self.scanned_device_list)
 
         self.remove_list = []
 

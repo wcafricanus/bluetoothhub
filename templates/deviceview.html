@@ -2,21 +2,30 @@
     <head>
     </head>
     <body>
-    <h1>Server sent events</h1>
-    <div id="this-div">
-
+    <h1>Wristbands in Range</h1>
+    <div>
+    <form action="/logout">
+      <select name="cars" size="6" id="listbox">
+      </select>
+      <br><br>
+      <input type="submit" value="Connect">
+    </form>
     </div>
     <script type="text/javascript">
-     var targetContainer = document.getElementById("this-div");
+     var targetContainer = document.getElementById("listbox");
      var eventSource = new EventSource("/stream");
+     var prev_obj = new Object();
      eventSource.onmessage = function(e) {
         console.log(e.data);
         obj = JSON.parse(e.data);
-        var str = '<ul style="list-style-type:circle">';
+        var equals = Object.keys(prev_obj).join("").localeCompare(Object.keys(obj).join("")) == 0;// element-wise compare
+        if(equals)
+            return;
+        prev_obj = obj;
+        var str = '';
         Object.keys(obj).forEach(function(key) {
-            str += '<li><a href="#">'+key+':'+obj[key]['name']+'</a></li>';
+            str += '<option value="'+key+'">'+obj[key]['name']+'</option>';
         })
-        str += '</ul>';
         targetContainer.innerHTML = str;
      };
     </script>

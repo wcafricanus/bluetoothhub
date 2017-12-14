@@ -63,11 +63,7 @@ def protected():
     return render_template("deviceview.html")
 
 
-def hub_callback(data):
-    device_data_stack.append(data)
-
-
-app.hub = HubConnection(hub_callback)# TODO remove app. prefix
+app.hub = HubConnection()
 app.hub_data_listener = app.hub.data_listener()
 app.data = "{}"
 
@@ -76,11 +72,11 @@ app.data = "{}"
 def stream():
     def eventStream():
         while True:
+            device_data_stack.append(next(app.hub_data_listener))
             time.sleep(1)
             while len(device_data_stack) > 0:
                 app.data = json.dumps(device_data_stack.pop())
             yield "data: " + app.data + "\n\n"
-            next(app.hub_data_listener)
 
     return Response(eventStream(), mimetype="text/event-stream")
 
