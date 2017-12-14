@@ -7,9 +7,14 @@ import hub.Async as Async
 
 class HubConnection:
 
-    url = 'http://172.26.186.177/gap/nodes?event=1&mac=CC:1B:E0:E0:69:B0'
-    urlConnectPrefix = 'http://172.26.186.177/gap/nodes/'
-    urlConnectSuffix = '/connection?mac=CC:1B:E0:E0:69:B0'
+    innerIP = '172.26.186.177'
+    hubMac = 'CC:1B:E0:E0:69:B0'
+    wristBandName = 'bong Vogue'
+
+    url = 'http://' + innerIP + '/gap/nodes?event=1&mac=' + hubMac
+    urlConnectPrefix = 'http://' + innerIP + '/gap/nodes/'
+    urlConnectSuffix = '/connection?mac=' + hubMac
+    urlConnectedList = 'http://' + innerIP + '/gap/nodes?connection_state=connected&mac=' + hubMac
 
     call_back = 0
     scanned_device_list = {}
@@ -39,13 +44,12 @@ class HubConnection:
             scan_time = time.time()
             device_info_json = json.loads(event.data)
             name = device_info_json.get("name", "")
-            if name == 'bong Vogue':
+            if name == self.wristBandName:
                 mac = device_info_json.get("bdaddrs", "")[0]['bdaddr']
                 device = {'name': name, "scan_time": scan_time}
                 if mac not in self.scanned_device_list:
                     self.scanned_device_list[mac] = device
                     self.serial += 1
-                    # self.call_back(self.scanned_device_list)
                 else:
                     self.scanned_device_list[mac] = device
 
@@ -79,3 +83,16 @@ class HubConnection:
             return True
         else:
             return False
+
+    def getConnectedDeviceList(self):
+        url = self.urlConnectedList
+        r = requests.get(url)
+        if r.status_code == 200:
+            record_device_list = {}
+            jsonData = r.json()
+            for node in jsonData.get('nodes'):
+                mac = node['id']
+                device = {'name': self.wristBandName}
+                record_device_list[mac] = device
+            return record_device_list
+        return {}
