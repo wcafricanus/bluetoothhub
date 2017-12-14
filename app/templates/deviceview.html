@@ -1,0 +1,74 @@
+<html>
+    <head>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    </head>
+    <body>
+    <h1 align="center">Wristbands in Range</h1>
+    <div style="width:200px; margin:auto">
+        <div style="background-color:#aaa; width:100px; float:left;">
+            <form action="/connect_device">
+              <select name="scanned" size="6" id="listbox" style="width:100px">
+              </select>
+              <br><br>
+              <button id="connectButton">Connect</button>
+            </form>
+        </div>
+        <div style="background-color:#eee; width:100px; float:right;">
+           <form action="/disconnect_device">
+              <select name="connected" size="6" id="connectedlist" style="width:100px">
+              </select>
+              <br><br>
+              <button id="disconnectButton">Disconnect</button>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+     var scannedDeviceContainer = document.getElementById("listbox");
+     var connectedDeviceContainer = document.getElementById("connectedlist")
+     var eventSource = new EventSource("/stream");
+     var prev_scanned = new Object();
+     var prev_connected = new Object();
+     function onButtonClick(e) {
+                    e.preventDefault();
+                    var url=$(this).closest('form').attr('action'),
+                    data=$(this).closest('form').serialize();
+                    $.ajax({
+                        url:url,
+                        type:'post',
+                        data:data,
+                        success:function(){
+                           //whatever you wanna do after the form is successfully submitted
+                        }
+                    });
+                    return false;
+                }
+     $("#connectButton").on("click", onButtonClick);
+     $("#disconnectButton").on("click", onButtonClick);
+
+     eventSource.onmessage = function(e) {
+        console.log(e.data);
+        fullData = JSON.parse(e.data);
+        scannedDevicesObj = fullData["scanned"]
+        var equals = Object.keys(prev_scanned).join("").localeCompare(Object.keys(scannedDevicesObj).join("")) == 0;// element-wise compare
+        if(!equals){
+            prev_scanned = scannedDevicesObj;
+            var str = '';
+            Object.keys(scannedDevicesObj).forEach(function(key) {
+                str += '<option value="'+key+'">'+scannedDevicesObj[key]['name']+'</option>';
+            })
+            scannedDeviceContainer.innerHTML = str;
+        }
+        connectedDevicesObj = fullData["connected"]
+        equals = Object.keys(prev_connected).join("").localeCompare(Object.keys(connectedDevicesObj).join("")) == 0;
+        if(!equals){
+            prev_connected = connectedDevicesObj;
+            var str = '';
+            Object.keys(connectedDevicesObj).forEach(function(key) {
+                str += '<option value="'+key+'">'+connectedDevicesObj[key]['name']+'</option>';
+            })
+            connectedDeviceContainer.innerHTML = str;
+        }
+     };
+    </script>
+    </body>
+</html>
