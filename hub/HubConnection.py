@@ -11,10 +11,16 @@ class HubConnection:
     hubMac = 'CC:1B:E0:E0:69:B0'
     wristBandName = 'bong Vogue'
 
-    url = 'http://' + innerIP + '/gap/nodes?event=1&mac=' + hubMac
+    urlScanDevices = 'http://' + innerIP + '/gap/nodes?event=1&mac=' + hubMac
+    urlNotification = 'http://' + innerIP + '/gatt/nodes?mac=' + hubMac
+
     urlConnectPrefix = 'http://' + innerIP + '/gap/nodes/'
     urlConnectSuffix = '/connection?mac=' + hubMac
     urlConnectedList = 'http://' + innerIP + '/gap/nodes?connection_state=connected&mac=' + hubMac
+
+    urlSetValueP1 = 'http://' + innerIP + '/gatt/nodes/'
+    urlSetValueP2 = '/handle/14/value/'
+    urlSetValueP3 = '/?mac=' + hubMac
 
     call_back = 0
     scanned_device_list = {}
@@ -22,11 +28,18 @@ class HubConnection:
     serial = 0
     last_serial = 0
 
-    def __init__(self):
+    start_measure_heart_time_dict = {}
+
+    heart_rate_callback = None
+
+    def __init__(self, heart_rate_callback):
         self.serial = 0
         self.last_serial = self.serial
-        thread = Async.Thread(self.start_event)
-        thread.start()
+        self.heart_rate_callback = heart_rate_callback
+        thread_scan = Async.Thread(self.start_event)
+        thread_scan.start()
+        thread_receive_notification = Async.Thread(self.start_notify)
+        thread_receive_notification.start()
 
     def data_listener(self):
         while True:
@@ -38,7 +51,7 @@ class HubConnection:
             yield self.scanned_device_list
 
     def start_event(self):
-        response = SSERequest.with_urllib3(self.url)
+        response = SSERequest.with_urllib3(self.urlScanDevices)
         client = sseclient.SSEClient(response)
         for event in client.events():
             scan_time = time.time()
@@ -52,6 +65,19 @@ class HubConnection:
                     self.serial += 1
                 else:
                     self.scanned_device_list[mac] = device
+
+    def start_notify(self):
+        response = SSERequest.with_urllib3(self.urlNotification)
+        client = sseclient.SSEClient(response)
+        for event in client.events():
+            notification = json.loads(event.data)
+            value = notification.get('value', '')
+            if(value.find("020101") != -1):
+                mac = notification.get('id', '')
+                if mac != '':
+                    heart_rate = int(value[6:], 16)
+                    return_obj = {'mac': mac, 'heart_rate': heart_rate}
+                    self.heart_rate_callback(return_obj)
 
     def remove_timeout_device(self):
         has_changes = False
@@ -96,3 +122,27 @@ class HubConnection:
                 record_device_list[mac] = device
             return record_device_list
         return {}
+
+    def startMeasureHeartRate(self, mac):
+        start_time = int(time.time())
+        print(start_time)
+        time_in_hex = hex(start_time)[2:].upper()
+        value_to_pass = '2900000015' + '01' + '13' + time_in_hex + '0000000000000000'
+        url = self.urlSetValueP1 + mac + self.urlSetValueP2 + value_to_pass + self.urlSetValueP3
+        self.start_measure_heart_time_dict[mac] = start_time
+        requests.get(url)
+
+    def stopMeasureHeartRate(self, mac):
+        start_time = self.start_measure_heart_time_dict.get(mac, int(time.time()))
+        print(start_time)
+        time_in_hex = hex(start_time)[2:].upper()
+        value_to_pass = '2900000015' + '00' + '13' + time_in_hex + '0000000000000000'
+        url = self.urlSetValueP1 + mac + self.urlSetValueP2 + value_to_pass + self.urlSetValueP3
+        self.start_measure_heart_time_dict.pop(mac, None)
+        requests.get(url)
+
+    def readHeartRate(self, mac):
+        url = self.urlSetValueP1 + mac + self.urlSetValueP2 + '2600000052' + self.urlSetValueP3
+        requests.get(url)
+
+
