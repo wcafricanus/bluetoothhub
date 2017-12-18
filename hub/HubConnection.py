@@ -101,7 +101,6 @@ class HubConnection:
         url = self.urlConnectPrefix + mac + self.urlConnectSuffix
         r = requests.post(url)
         if r.status_code == 200:
-            # self.openWristBandNotify(mac)
             return True
         else:
             return False
@@ -117,7 +116,8 @@ class HubConnection:
     def openWristBandNotify(self, mac):
         url = self.urlSetValueP1 + mac + self.urlSetValueP2Option + '0100' + self.urlSetValueP3
         print(url)
-        r = requests.post(url)
+        r = requests.get(url)
+        print(r.text)
         if r.status_code == 200:
             return True
         else:
@@ -137,6 +137,8 @@ class HubConnection:
         return {}
 
     def startMeasureHeartRate(self, mac):
+        self.openWristBandNotify(mac)
+
         start_time = int(time.time())
         print(start_time)
         time_in_hex = hex(start_time)[2:].upper()
