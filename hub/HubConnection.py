@@ -20,6 +20,7 @@ class HubConnection:
     urlConnectedList = 'http://' + innerIP + '/gap/nodes?connection_state=connected&mac=' + hubMac
 
     urlSetValueP1 = 'http://' + innerIP + '/gatt/nodes/'
+    urlSetValueP2Option = '/handle/12/value/'
     urlSetValueP2 = '/handle/14/value/'
     urlSetValueP3 = '/?mac=' + hubMac
 
@@ -100,6 +101,7 @@ class HubConnection:
         url = self.urlConnectPrefix + mac + self.urlConnectSuffix
         r = requests.post(url)
         if r.status_code == 200:
+            # self.openWristBandNotify(mac)
             return True
         else:
             return False
@@ -107,6 +109,15 @@ class HubConnection:
     def disconnectDevice(self, mac):
         url = self.urlConnectPrefix + mac + self.urlConnectSuffix
         r = requests.delete(url)
+        if r.status_code == 200:
+            return True
+        else:
+            return False
+
+    def openWristBandNotify(self, mac):
+        url = self.urlSetValueP1 + mac + self.urlSetValueP2Option + '0100' + self.urlSetValueP3
+        print(url)
+        r = requests.post(url)
         if r.status_code == 200:
             return True
         else:
@@ -136,7 +147,7 @@ class HubConnection:
         self.start_measure_heart_time_dict[mac] = start_time
         requests.get(url)
 
-        thread_read_heart_rate = threading.Thread(target=self.periodReadHeartRate, args=(mac, 1,))
+        thread_read_heart_rate = threading.Thread(target=self.periodReadHeartRate, args=(mac, 5,))
         self.read_heart_rate_thread_dict[mac] = thread_read_heart_rate
         thread_read_heart_rate.start()
 
@@ -150,12 +161,12 @@ class HubConnection:
         self.start_measure_heart_time_dict.pop(mac, None)
         requests.get(url)
 
-        thread_read_heart_rate = self.read_heart_rate_thread_dict[mac]
-        thread_read_heart_rate.keep_running = False
+        thread_read_heart_rate = self.read_heart_rate_thread_dict.get(mac, None)
+        if thread_read_heart_rate != None:
+            thread_read_heart_rate.keep_running = False
 
     def readHeartRate(self, mac):
         url = self.urlSetValueP1 + mac + self.urlSetValueP2 + '2600000052' + self.urlSetValueP3
-        print(url)
         requests.get(url)
 
     def periodReadHeartRate(self, mac, periodSec):

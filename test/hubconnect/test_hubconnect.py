@@ -16,6 +16,8 @@ myhub = HubConnection(callback)
 
 # myhub.stopMeasureHeartRate('CA:67:91:08:52:CE')
 #
-myhub.startMeasureHeartRate('CA:67:91:08:52:CE')
-time.sleep(40)
-myhub.stopMeasureHeartRate('CA:67:91:08:52:CE')
+myhub.startMeasureHeartRate(mac)
+time.sleep(60)
+myhub.stopMeasureHeartRate(mac)
+
+# myhub.openWristBandNotify(mac)
