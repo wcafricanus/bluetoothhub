@@ -4,6 +4,7 @@ import sseclient
 import time
 import requests
 import hub.Async as Async
+import threading
 
 class HubConnection:
 
@@ -29,6 +30,7 @@ class HubConnection:
     last_serial = 0
 
     start_measure_heart_time_dict = {}
+    read_heart_rate_thread_dict = {}
 
     heart_rate_callback = None
 
@@ -128,21 +130,39 @@ class HubConnection:
         print(start_time)
         time_in_hex = hex(start_time)[2:].upper()
         value_to_pass = '2900000015' + '01' + '13' + time_in_hex + '0000000000000000'
+        print('time in hex : ' + time_in_hex)
+        print('start pass value : ' + value_to_pass)
         url = self.urlSetValueP1 + mac + self.urlSetValueP2 + value_to_pass + self.urlSetValueP3
         self.start_measure_heart_time_dict[mac] = start_time
         requests.get(url)
+
+        thread_read_heart_rate = threading.Thread(target=self.periodReadHeartRate, args=(mac, 1,))
+        self.read_heart_rate_thread_dict[mac] = thread_read_heart_rate
+        thread_read_heart_rate.start()
 
     def stopMeasureHeartRate(self, mac):
         start_time = self.start_measure_heart_time_dict.get(mac, int(time.time()))
         print(start_time)
         time_in_hex = hex(start_time)[2:].upper()
         value_to_pass = '2900000015' + '00' + '13' + time_in_hex + '0000000000000000'
+        print('stop pass value : ' + value_to_pass)
         url = self.urlSetValueP1 + mac + self.urlSetValueP2 + value_to_pass + self.urlSetValueP3
         self.start_measure_heart_time_dict.pop(mac, None)
         requests.get(url)
 
+        thread_read_heart_rate = self.read_heart_rate_thread_dict[mac]
+        thread_read_heart_rate.keep_running = False
+
     def readHeartRate(self, mac):
         url = self.urlSetValueP1 + mac + self.urlSetValueP2 + '2600000052' + self.urlSetValueP3
+        print(url)
         requests.get(url)
+
+    def periodReadHeartRate(self, mac, periodSec):
+        t = threading.currentThread()
+        while getattr(t, "keep_running", True):
+            self.readHeartRate(mac)
+            time.sleep(periodSec)
+
 
 
