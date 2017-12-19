@@ -10,8 +10,16 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 device_data_stack = list()
+app.heart_rate_dict = dict()
 
-app.hub = HubConnection()
+
+def heart_rate_callback(args):
+    print(args)
+    if args['mac'] in app.heart_rate_dict:
+        app.heart_rate_dict[args['mac']] = args['heart_rate']
+
+
+app.hub = HubConnection(heart_rate_callback=heart_rate_callback)
 app.hub_data_listener = app.hub.data_listener()
 app.data = "{}"
 

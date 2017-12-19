@@ -53,7 +53,7 @@ def login():
 @app.route('/protected')
 @login_required
 def protected():
-    return render_template("deviceview.html")
+    return render_template("overview.html")
 
 
 @app.route("/stream")
@@ -66,7 +66,8 @@ def stream():
             time.sleep(1)
             while len(device_data_stack) > 0:
                 scanned_device_list = device_data_stack.pop()
-            data_dict = {'scanned': scanned_device_list, 'connected': connected_device_list}
+            data_dict = {'scanned': scanned_device_list, 'connected': connected_device_list,
+                         'heart_rate': app.heart_rate_dict}
             app.data = json.dumps(data_dict)
             yield "data: " + app.data + "\n\n"
 
@@ -96,4 +97,23 @@ def connect_device():
 def disconnect_device():
     mac = request.form['connected']
     result = app.hub.disconnectDevice(mac)
+    return json.dumps({'success': result}), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/start_measure_hr", methods=['GET', 'POST'])
+def start_measure_hr():
+    mac = request.form['connected']
+    # register the heart_rate associated with this mac addr. to be listened
+    app.heart_rate_dict[mac] = None
+
+    result = app.hub.startMeasureHeartRate(mac)
+    return json.dumps({'success': result}), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/stop_measure_hr", methods=['GET', 'POST'])
+def stop_measure_hr():
+    mac = request.form['connected']
+    # unregister the heart_rate associated with this mac addr. to be listened
+    app.heart_rate_dict.pop(mac)
+    result = app.hub.stopMeasureHeartRate(mac)
     return json.dumps({'success': result}), 200, {'ContentType': 'application/json'}
