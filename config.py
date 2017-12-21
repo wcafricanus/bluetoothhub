@@ -1,0 +1,8 @@
+# Bluetooth Hub Section
+CONNECTION_MODE = 'remote'
+#CONNECTION_MODE = 'local'
+AC_IP = '54.153.66.33'
+DEVELOPER_ID = 'nuhssg'
+SECRET = 'bb94272afd504cc1'
+HUB_IP_PUBLIC = '137.132.228.42'
+HUB_IP_PRIVATE = '172.26.186.177'

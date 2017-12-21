@@ -114,6 +114,7 @@ def start_measure_hr():
 def stop_measure_hr():
     mac = request.form['connected']
     # unregister the heart_rate associated with this mac addr. to be listened
-    app.heart_rate_dict.pop(mac)
+    if mac in app.heart_rate_dict:
+        app.heart_rate_dict.pop(mac)
     result = app.hub.stopMeasureHeartRate(mac)
     return json.dumps({'success': result}), 200, {'ContentType': 'application/json'}

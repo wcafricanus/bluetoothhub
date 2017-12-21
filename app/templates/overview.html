@@ -21,25 +21,26 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-4">
+        <h3>Devices in Range</h3>
       <form>
           <div class="form-group">
-              <label for="listbox">Devices in Range</label>
             <select multiple name="scanned" class="form-control" id="listbox">
             </select>
           </div>
-        <button id="connectButton" name="/connect_device">Connect</button>
+        <button id="connectButton" class="btn btn-primary" name="/connect_device">Connect</button>
       </form>
     </div>
     <div class="col-sm-4">
+        <h3>Connected Devices</h3>
       <form>
           <div class="form-group">
-              <label for="connectedlist">Connected Devices</label>
             <select multiple name="connected" class="form-control" id="connectedlist">
             </select>
           </div>
-        <button id="disconnectButton" name="/disconnect_device">Disconnect</button>
-        <button id="startHrButton" name="/start_measure_hr">Heart Rate</button>
-        <button id="stopHrButton" name="/stop_measure_hr">Stop Measure</button>
+        <button id="disconnectButton" class="btn btn-primary" name="/disconnect_device">Disconnect</button>
+        <button id="startHrButton" class="btn btn-primary" name="/start_measure_hr">Heart Rate</button>
+          <br><br>
+        <button id="stopHrButton" class="btn btn-primary" name="/stop_measure_hr">Stop Measure</button>
       </form>
     </div>
     <div class="col-sm-4">
