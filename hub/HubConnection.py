@@ -186,7 +186,7 @@ class HubConnection:
 
     def request_get(self, url, params=None, **kwargs):
         self.ensure_header_with_token(kwargs)
-        return requests.get(url, params=None, **kwargs)
+        return requests.get(url, params, **kwargs)
 
     def request_post(self, url, data=None, json=None, **kwargs):
         self.ensure_header_with_token(kwargs)

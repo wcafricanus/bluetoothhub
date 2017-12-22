@@ -4,11 +4,13 @@ from mongoengine import Document, StringField
 class User(Document):
     email = StringField(primary_key=True)
     password = StringField()
+    display_name = StringField()
 
-    def __init__(self, email, password, *args, **values):
+    def __init__(self, email, password, display_name, *args, **values):
         super().__init__(*args, **values)
         self.email = email
         self.password = password
+        self.display_name = display_name
 
     def __repr__(self):
         return '<User %r>' % self.email

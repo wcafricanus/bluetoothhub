@@ -23,7 +23,6 @@
  $("#stopHrButton").on("click", onButtonClick);
 
  eventSource.onmessage = function(e) {
-    console.log(e.data);
     fullData = JSON.parse(e.data);
     scannedDevicesObj = fullData["scanned"]
     var equals = Object.keys(prev_scanned).join("").localeCompare(Object.keys(scannedDevicesObj).join("")) == 0;// element-wise compare
@@ -31,7 +30,7 @@
         prev_scanned = scannedDevicesObj;
         var str = '';
         Object.keys(scannedDevicesObj).forEach(function(key) {
-            str += '<option value="'+key+'">'+scannedDevicesObj[key]['name']+'</option>';
+            str += '<option value="'+key+'">'+scannedDevicesObj[key]['owner']+'\'s '+scannedDevicesObj[key]['name']+'</option>';
         })
         scannedDeviceContainer.innerHTML = str;
     }
@@ -41,7 +40,7 @@
         prev_connected = connectedDevicesObj;
         var str = '';
         Object.keys(connectedDevicesObj).forEach(function(key) {
-            str += '<option value="'+key+'">'+connectedDevicesObj[key]['name']+'</option>';
+            str += '<option value="'+key+'">'+connectedDevicesObj[key]['owner']+'\'s '+connectedDevicesObj[key]['name']+'</option>';
         })
         connectedDeviceContainer.innerHTML = str;
     }
@@ -75,10 +74,13 @@
             var str = '';
             heartrate = heartRateObj[key]
             if (heartrate != null)
-                str += '<i class="fa fa-heart-o" style="font-size:48px;color:red">'+heartrate+'</i>';
+                str += '<i id="beatingHeart" class="fa fa-heart" '+
+                 'style="font-size:48px;color:red;animation-duration:'+60/heartrate+'s;"></i>'+heartrate+'bpm';
             else
-                str += '<i class="fa fa-circle-o-notch fa-spin" style="font-size:48px;color:red"></i>';
-            if(p_element.innerHTML !== str)
+                str += '<i class="fa fa-circle-o-notch fa-spin" style="font-size:48px;color:red"></i>Measuring';
+            if(p_element.innerHTML != str){
                 p_element.innerHTML = str;
+                console.log(60/heartrate+"s");
+            }
     });
  };
