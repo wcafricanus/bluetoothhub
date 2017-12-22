@@ -43,7 +43,7 @@ def signup():
 def login():
     form = LoginForm()
     if request.method == 'GET':
-        return render_template('login.html', form=form)
+        return render_template('login.html', form=form, page_title='Log in')
     elif request.method == 'POST':
         if form.validate_on_submit():
             user = User.objects(email=form.email.data).first()
@@ -62,7 +62,7 @@ def login():
 @app.route('/protected')
 @login_required
 def protected():
-    return render_template("overview.html")
+    return render_template("overview.html", page_title="Heart Monitor")
 
 
 def append_owner(device_dict):
