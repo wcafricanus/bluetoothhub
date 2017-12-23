@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask
 from flask_login import LoginManager
 
@@ -6,6 +8,10 @@ from hub.HubConnection import HubConnection
 app = Flask(__name__)
 app.config.from_object('config')
 app.secret_key = 'secretkeyhereplease'
+logHandler = logging.FileHandler('app.log')
+logHandler.setLevel(logging.INFO)
+app.logger.addHandler(logHandler)
+app.logger.setLevel(logging.INFO)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
