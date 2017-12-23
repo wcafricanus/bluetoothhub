@@ -23,6 +23,7 @@
  $("#stopHrButton").on("click", onButtonClick);
 
  eventSource.onmessage = function(e) {
+    console.log(e.data)
     fullData = JSON.parse(e.data);
     scannedDevicesObj = fullData["scanned"]
     var equals = Object.keys(prev_scanned).join("").localeCompare(Object.keys(scannedDevicesObj).join("")) == 0;// element-wise compare
@@ -80,7 +81,6 @@
                 str += '<i class="fa fa-circle-o-notch fa-spin" style="font-size:48px;color:red"></i>Measuring';
             if(p_element.innerHTML != str){
                 p_element.innerHTML = str;
-                console.log(60/heartrate+"s");
             }
     });
  };
