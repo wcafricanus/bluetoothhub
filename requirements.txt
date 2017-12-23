@@ -6,3 +6,4 @@ sseclient-py
 pytest
 gunicorn
 gevent
+requests
