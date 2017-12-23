@@ -1,6 +1,6 @@
 import time
 from flask import render_template, json, Response, request, redirect, flash
-from flask_login import login_required, login_user, logout_user
+from flask_login import login_required, login_user, logout_user, current_user
 
 from app import app, login_manager, device_data_stack
 from forms import SignupForm, LoginForm
@@ -108,9 +108,10 @@ def load_user(email):
 @app.route("/connect_device", methods=['GET', 'POST'])
 def connect_device():
     mac = request.form['scanned']
+    user = current_user
     # add device into database if not added before
     if not Device.objects(mac=mac).first():
-        device = Device(mac=mac, owner=User.objects().first())
+        device = Device(mac=mac, owner=User.objects(email=user.email).first())
         device.save()
     result = app.hub.connectDevice(mac)
     return json.dumps({'success': result}), 200, {'ContentType': 'application/json'}
