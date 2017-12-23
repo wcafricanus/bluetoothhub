@@ -10,8 +10,7 @@ import base64
 class HubConnection:
     def __init__(self, heart_rate_callback, config):
         self.config = config
-        self.local = self.config['CONNECTION_MODE']
-        if self.local:
+        if self.config['CONNECTION_MODE'] == 'local':
             self.innerIP = self.config['HUB_IP_PRIVATE']
         else:
             self.innerIP = self.config['AC_IP'] + '/api'
@@ -202,7 +201,7 @@ class HubConnection:
         self.request_token()
 
     def ensure_header_with_token(self, kwargs):
-        if self.local:
+        if self.config['CONNECTION_MODE'] == 'local':
             return # Do nothing in local mode
         self.ensure_valid_token()
         if not kwargs.get('headers'):
