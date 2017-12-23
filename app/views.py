@@ -88,9 +88,11 @@ def stream():
             data_dict = {'scanned': scanned_device_list, 'connected': connected_device_list,
                          'heart_rate': app.heart_rate_dict}
             app.data = json.dumps(data_dict)
+            print("packet out!")
             yield "data: " + app.data + "\n\n"
 
-    return Response(eventStream(), mimetype="text/event-stream")
+    return Response(eventStream(), mimetype="text/event-stream", headers={'X-Accel-Buffering':'no',
+                                                                          'Cache-Control': 'no-cache'})
 
 
 @app.route("/logout")
