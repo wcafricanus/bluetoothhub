@@ -52,17 +52,16 @@ def login():
                     login_user(user)
                     return redirect('/protected')
                 else:
-                    return "Wrong password"
+                    form.password.errors.append("Wrong Password")
             else:
-                return "user doesn't exist"
-    else:
-        return "form not validated"
+                form.email.errors.append("user doesn't exist")
+        return render_template('login.html', form=form, page_title='Log in')
 
 
 @app.route('/protected')
 @login_required
 def protected():
-    return render_template("overview.html", page_title="Heart Monitor")
+    return render_template("overview.html", page_title="Heart Monitor", user=current_user)
 
 
 def append_owner(device_dict):

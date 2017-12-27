@@ -15,13 +15,18 @@
     {% endblock %}
 
     <!-- Custom styles for this template -->
-    <link href="/static/themes/water/starter-template.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.6/umd/popper.min.js"></script>
   </head>
 
   <body>
-
+    <nav class="navbar navbar-light bg-light">
+      <a class="navbar-brand" href="#">Health Monitor</a>
+      {% if user %}
+      <a class="ml-auto mr-2" >{{user.display_name}}</a>
+      <a class="mr-2" href="/logout">Logout</a>
+      {% endif %}
+    </nav>
     <div class="jumbotron text-center">
       <h1>Smart Device Overview</h1>
       <p>Check Your Friends' Heart Rate in Real Time!</p>
